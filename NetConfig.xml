@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<property>
+
+    <serverport>3456</serverport>
+    <iecip>192.168.1.250</iecip>
+    <iecport>2404</iecport>
+    <baudrate>9600</baudrate>
+
+</property>

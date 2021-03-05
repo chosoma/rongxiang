@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thingtek.beanServiceDao.data.dao.SF6DataDao">
+
+    <select id="findData"
+            parameterType="com.thingtek.socket.data.entity.DataSearchPara"
+            resultType="java.util.Map">
+        SELECT
+        DFOO.ID,
+        DFOO.UNIT_NUM
+        , DFOO.INSERTTIME
+        , DFOO.WENDU
+        , DFOO.MIDU
+        , DFOO.YALI
+        FROM
+        DATA_SF6 DFOO
+        LEFT JOIN
+        UNIT_SF6 UNIT
+        ON UNIT.UNIT_NUM = DFOO.UNIT_NUM
+        <if test=" t1!=null or t2!=null ">
+            <where>
+                <choose>
+                    <when test=" t1!=null and t2!=null ">
+                        DFOO.INSERTTIME BETWEEN #{t1} AND #{t2}
+                    </when>
+                    <when test=" t1!=null and t2==null ">
+                        DFOO.INSERTTIME &gt; #{t1}
+                    </when>
+                    <when test=" t1==null and t2!=null ">
+                        DFOO.INSERTTIME &lt; #{t2}
+                    </when>
+                </choose>
+            </where>
+        </if>
+        ORDER BY DFOO.INSERTTIME DESC
+    </select>
+    <delete id="deleteDatas">
+        DELETE from data_sf6
+        <where>
+            UNIT_NUM = #{unit.unit_num} AND
+            INSERTTIME IN
+            <foreach collection="dates" item="date" open="(" separator="," close=")">
+                #{date}
+            </foreach>
+        </where>
+    </delete>
+    <insert id="save" parameterType="com.thingtek.beanServiceDao.data.entity.SF6DataBean">
+        insert into data_sf6
+        (
+        unit_num,
+        yali,
+        midu,
+        wendu,
+        inserttime
+        )
+        values
+        <foreach collection="array" item="data" open="(" close=")" separator="),(">
+            #{data.unit_num},
+            #{data.yali},
+            #{data.midu} ,
+            #{data.wendu} ,
+            #{data.inserttime}
+        </foreach>
+    </insert>
+    <select id="getLatest" resultType="com.thingtek.beanServiceDao.data.entity.SF6DataBean">
+        SELECT
+        DFOO.UNIT_NUM
+        , DFOO.INSERTTIME
+        , DFOO.WENDU
+        , DFOO.MIDU
+        , DFOO.YALI
+        FROM
+        DATA_SF6 DFOO
+        LEFT JOIN
+        UNIT_SF6 UNIT
+        ON UNIT.UNIT_NUM = DFOO.UNIT_NUM
+        <where>
+            UNIT.UNIT_NUM = #{_parameter}
+        </where>
+        ORDER BY DFOO.INSERTTIME DESC
+        limit 1
+    </select>
+
+    <select id="getDataByField" resultType="java.lang.Float">
+        select ${field}
+        from data_sf6
+        where unit_num = #{unit_num}
+        order by inserttime desc
+        limit 1
+    </select>
+</mapper>

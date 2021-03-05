@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thingtek.beanServiceDao.data.dao.DisDataDao">
+    <select id="findDataStrById" parameterType="int" resultType="string">
+    select DATASTRING from DATA_DIS where id = #{id};
+    </select>
+    <select id="findData"
+            resultType="java.lang.String">
+        SELECT DATASTRING FROM DATA_DIS
+        where ID = (SELECT ID FROM DATA_DIS WHERE
+        UNIT_NUM = #{unit_num}
+        AND
+        INSERTTIME = #{inserttime}
+        limit 0,1);
+    </select>
+
+    <select id="findDataInfo"
+            parameterType="com.thingtek.socket.data.entity.DataSearchPara"
+            resultType="java.util.Map">
+        SELECT
+        DFOO.ID,
+        DFOO.UNIT_NUM,
+        DFOO.INSERTTIME FROM
+        UNIT_DIS UNIT
+        LEFT JOIN
+        DATA_DIS DFOO
+        ON DFOO.UNIT_NUM = UNIT.UNIT_NUM
+        <if test=" t1!=null or t2!=null ">
+            <where>
+                <choose>
+                    <when test=" t1!=null and t2!=null ">
+                        DFOO.INSERTTIME BETWEEN #{t1} AND #{t2}
+                    </when>
+                    <when test=" t1!=null and t2==null ">
+                        DFOO.INSERTTIME &gt; #{t1}
+                    </when>
+                    <when test=" t1==null and t2!=null ">
+                        DFOO.INSERTTIME &lt; #{t2}
+                    </when>
+                </choose>
+            </where>
+        </if>
+        ORDER BY DFOO.INSERTTIME DESC;
+    </select>
+
+    <delete id="deleteDatas">
+        delete from data_dis
+        <where>
+            UNIT_NUM = #{unit.unit_num} AND
+            INSERTTIME IN
+            <foreach collection="dates" item="date" open="(" separator="," close=")">
+                #{date}
+            </foreach>
+        </where>
+        ;
+    </delete>
+    <select id="findIds" resultType="java.lang.Long" parameterType="java.util.List">
+        select ID from data_dis
+        <where>
+            UNIT_NUM = #{unit.unit_num} AND
+            INSERTTIME IN
+            <foreach collection="dates" item="date" open="(" separator="," close=")">
+                #{date}
+            </foreach>
+        </where>
+        ;
+    </select>
+    <delete id="deleteDatasById">
+        delete from DATA_DIS
+        <where>
+            ID IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        ;
+    </delete>
+
+    <insert id="saveData" parameterType="com.thingtek.beanServiceDao.data.entity.DisDataBean">
+        INSERT INTO DATA_DIS
+        (UNIT_NUM,
+        DATASTRING,
+        INSERTTIME
+        )
+        VALUES
+        (
+        #{unit_num},
+        #{datastring},
+        #{inserttime}
+        );
+    </insert>
+</mapper>
